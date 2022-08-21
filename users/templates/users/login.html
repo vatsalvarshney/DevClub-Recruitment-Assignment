@@ -1,0 +1,18 @@
+{% extends 'users/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+Log In
+{% endblock %}
+
+{% block content %}
+    <h1>Login to the world of Sports!</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <fieldset>
+            {{ form|crispy }}
+        </fieldset>
+        <button class="btn btn-secondary" type="submit">Log In</button>
+    </form>
+    Need an Account? <a href="{% url 'register' %}">Sign Up</a>
+{% endblock %}
