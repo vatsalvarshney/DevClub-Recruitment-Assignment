@@ -1,0 +1,27 @@
+{% extends 'users/base.html' %}
+
+{% block title %}
+{{ view_user.get_full_name }}
+{% endblock %}
+
+{% block content %}
+    <h1>{{ view_user.get_full_name }}</h1>
+    <div><img src="{{ view_user.profile_picture.url }}" alt="" width="100"></div>
+    {% if view_user == user %}
+        <div><a href="{% url 'pwd-change' %}">Change password</a></div>
+        <div><a href="{% url 'pfp-change' %}">Change Profile Picture</a></div>
+    {% endif %}
+    <h2>User Details</h2>
+    <h4>Email address</h4>
+    <a href="mailto:{{ view_user.email }}">{{ view_user.email }}</a>
+    <h4>Roles</h4>
+    {{ view_user.roles }}
+    <h4>Last access to site</h4>
+    {% if view_user == user %}
+        Online
+    {% elif view_user.last_login %}
+        {{ view_user.last_login }}
+    {% else %}
+        Never
+    {% endif %}
+{% endblock %}

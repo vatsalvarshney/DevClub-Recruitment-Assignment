@@ -1,0 +1,13 @@
+{% extends 'course/base.html' %}
+
+{% block title %}
+No User found
+{% endblock %}
+
+{% block content %}
+    {% if exists %}
+        <h1>This account is no longer active</h1>
+    {% else %}
+        <h1>This user does not exists</h1>
+    {% endif %}
+{% endblock %}

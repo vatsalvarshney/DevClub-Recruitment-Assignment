@@ -19,7 +19,7 @@ class Role(models.Model):
         return self.get_id_display()
 
 def pfpUpload(instance, filename):
-    new_path=os.path.join('users/profile-pics', instance.kerberos+'.'+filename.split('.')[-1])
+    new_path=os.path.join('users/profile-pics', instance.username+'.'+filename.split('.')[-1])
     full_path=os.path.join(settings.MEDIA_ROOT,new_path)
     if os.path.exists(full_path):
         os.remove(full_path)
@@ -31,4 +31,5 @@ class User(AbstractUser):
 
     def roles(self):
         return "; ".join([r.get_id_display() for r in self.role.all()])
+    
 

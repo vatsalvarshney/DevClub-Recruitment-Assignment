@@ -14,8 +14,10 @@
     <header>
         <nav class="navbar navbar-expand-md navbar-dark bg-darkb fixed-top">
             <div class="container">
+                <a class="navbar-brand" href="{% url 'dashboard' %}">Mittal Sports Complex Booking</a>
                 <div class="navbar-nav">
                     {% if user.is_authenticated %}
+                        <a class="nav-item nav-link" href="{% url 'profile' username=user.username %}">Profile</a>
                         <a class="nav-item nav-link" href="{% url 'logout' %}">Logout</a>
                     {% else %}
                         <a class="nav-item nav-link" href="{% url 'login' %}">Login</a>

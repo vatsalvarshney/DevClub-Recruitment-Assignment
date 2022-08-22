@@ -1,0 +1,17 @@
+{% extends 'users/base.html' %}
+
+{% block title %}
+Dashboard
+{% endblock %}
+
+{% block content %}
+    <h1>Dashboard</h1>
+    <h3>Sports</h3>
+    <ul class="list-group list-group-flush">
+        {% for s in sports %}
+        <li class="list-group-item"><div class="row">
+            <div class="col-3 h5">{{ s }}</div>
+        </div></li>
+        {% endfor %}
+    </ul>
+{% endblock %}

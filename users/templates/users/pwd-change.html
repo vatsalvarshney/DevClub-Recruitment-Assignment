@@ -1,0 +1,18 @@
+{% extends 'users/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+Change Password
+{% endblock %}
+
+{% block content %}
+    <h2>Change Password</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <fieldset>
+            {{ form|crispy }}
+        </fieldset>
+        <button class="btn btn-secondary" onclick="javascript:window.history.back(-1);return false;">Cancel</button>
+        <button class="btn btn-secondary" type="submit">Save</button>
+    </form>
+{% endblock %}
