@@ -31,5 +31,6 @@ urlpatterns = [
     path('user/pfpchange/', user_views.pfpChange, name='pfp-change'),
     path('dashboard/', slot_views.dashboard, name='dashboard'),
     path('', slot_views.dashboardRedirect),
-    path('sport/<int:sport_id>/', include('slots.urls'))
+    path('sport/new/', slot_views.sportCreate, name='sport-create'),
+    path('sport/<int:sport_id>/', include('slots.urls')),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

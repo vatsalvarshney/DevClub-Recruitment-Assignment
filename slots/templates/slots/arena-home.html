@@ -1,0 +1,35 @@
+{% extends 'users/base.html' %}
+{% load static %}
+
+{% block title %}
+{{ arena }} | {{ sport }}
+{% endblock %}
+
+{% block content %}
+    <h1>{{ sport }}</h1>
+    <h2>{{ arena }}
+        {% if isstaff or isadmin %}
+            <a href="{% url 'arena-edit' sport_id=sport.id arena_id=arena.id %}"><img src="{% static 'slots/update-icon.webp' %}" width="15" height="15"></a>
+            <a href="{% url 'arena-delete' sport_id=sport.id arena_id=arena.id %}"><img src="{% static 'slots/delete-icon.png' %}" width="15" height="15"></a>
+        {% endif %}</h2>
+    {% if isstaff or isadmin %}
+        <div class="dropdown dropright">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Add new Slot
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <p class="dropdown-header"><b>Choose Repeat Frequency</b></p>
+                <a class="dropdown-item" href="{% url 'slot-create-no-repeat' sport_id=sport.id arena_id=arena.id %}">No Repeat</a>
+                <a class="dropdown-item" href="{% url 'slot-create-daily' sport_id=sport.id arena_id=arena.id %}">Daily</a>
+                <a class="dropdown-item" href="{% url 'slot-create-weekly' sport_id=sport.id arena_id=arena.id %}">Weekly</a>
+            </div>
+        </div>
+    {% endif %}
+    <ul class="list-group list-group-flush">
+        {% for s in slots %}
+        <li class="list-group-item"><div class="row">
+            <div class="h5">{{ s }}</div>
+        </div></li>
+        {% endfor %}
+    </ul>
+{% endblock %}

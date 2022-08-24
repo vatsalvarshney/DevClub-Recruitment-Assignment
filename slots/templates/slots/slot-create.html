@@ -1,0 +1,33 @@
+{% extends 'users/base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}
+Create Slot | {{ sport }}
+{% endblock %}
+
+{% block content %}
+    <h1>{{ sport }}</h1>
+    <h2>{{ arena }}</h2>
+    {% if isstaff or isadmin %}
+        <h3>Create new slot</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <fieldset>
+                {{ form|crispy }}
+            </fieldset>
+            <button class="btn btn-secondary" onclick="javascript:window.history.back(-1);return false;">Cancel</button>
+            <button class="btn btn-secondary" type="submit">Save</button>
+        </form>
+    {% else %}
+        You are not authorized to access this page. Contact the admin if you think this is a mistake.
+    {% endif %}
+    <script type="text/javascript" src="/admin/jsi18n/"></script>
+    <script type="text/javascript" src="/static/admin/js/core.js"></script>
+    <script type="text/javascript" src="/static/admin/js/admin/RelatedObjectLookups.js"></script>
+    <script type="text/javascript" src="/static/admin/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
+    <script type="text/javascript" src="/static/admin/js/actions.min.js"></script>
+    <script type="text/javascript" src="/static/admin/js/calendar.js"></script>
+    <script type="text/javascript" src="/static/admin/js/admin/DateTimeShortcuts.js"></script>
+{% endblock %}

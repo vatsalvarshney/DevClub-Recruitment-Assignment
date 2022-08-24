@@ -10,7 +10,7 @@ Dashboard
     <ul class="list-group list-group-flush">
         {% for s in sports %}
         <li class="list-group-item"><div class="row">
-            <div class="col-3 h5">{{ s }}</div>
+            <a href="{% url 'sport-home' sport_id=s.id %}"><div class="col-3 h5">{{ s }}</div></a>
         </div></li>
         {% endfor %}
     </ul>

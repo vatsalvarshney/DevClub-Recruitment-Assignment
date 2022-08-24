@@ -1,0 +1,26 @@
+{% extends 'users/base.html' %}
+{% load static %}
+
+{% block title %}
+{{ sport }}
+{% endblock %}
+
+{% block content %}
+    <img src="{% static sport.cover_picture %}" class="img-fluid">
+    <h1>{{ sport }}
+        {% if isstaff or isadmin %}
+            <a href="{% url 'sport-edit' sport_id=sport.id %}"><img src="{% static 'slots/update-icon.webp' %}" width="15" height="15"></a>
+            <a href="{% url 'sport-delete' sport_id=sport.id %}"><img src="{% static 'slots/delete-icon.png' %}" width="15" height="15"></a>
+        {% endif %}
+    </h1>
+    {% if isstaff or isadmin %}
+        <div><a href="{% url 'arena-create' sport_id=sport.id %}">Add new Arena</a></div>
+    {% endif %}
+    <ul class="list-group list-group-flush">
+        {% for a in arenas %}
+        <li class="list-group-item"><div class="row">
+            <a href="{% url 'arena-home' sport_id=sport.id arena_id=a.id %}"><div class="h5">{{ a }}</div></a>
+        </div></li>
+        {% endfor %}
+    </ul>
+{% endblock %}
