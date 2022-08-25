@@ -10,7 +10,7 @@ from django.utils.timezone import make_aware
 
 
 @login_required(login_url='login')
-def context(request, sport_id=None, arena_id=None):
+def context(request, sport_id=None, arena_id=None, slot_id=None):
     c= {
         'ismemeber': request.user.role.contains(Role.objects.get(id=3)),
         'isstaff': request.user.role.contains(Role.objects.get(id=2)),
@@ -20,6 +20,8 @@ def context(request, sport_id=None, arena_id=None):
         c['sport']=Sport.objects.get(id=sport_id)
     if arena_id:
         c['arena']=Arena.objects.get(id=arena_id)
+    if slot_id:
+        c['slot']=Slot.objects.get(id=slot_id)
     return c
 
 
@@ -226,3 +228,31 @@ def slotCreateWeekly(request, sport_id, arena_id):
         form = SlotCreationFormWeekly(initial={'arena':cont['arena']})
     cont['form']= form
     return render(request, 'slots/slot-create.html', cont)
+
+
+def slotEdit(request, sport_id, arena_id, slot_id):
+    cont=context(request, sport_id, arena_id, slot_id)
+    if request.method == 'POST':
+        form = SlotCreationFormNoRepeat(request.POST, instance=cont['slot'])
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Slot {cont["slot"]} has been updated!')
+            return redirect(reverse('arena-home', args=[sport_id, arena_id]))
+    else:
+        form = SlotCreationFormNoRepeat(instance=cont['slot'])
+    cont['form']=form
+    return render(request, 'slots/slot-edit.html', cont)
+
+def slotDelete(request, sport_id, arena_id, slot_id):
+    cont=context(request, sport_id, arena_id, slot_id)
+    if request.method == 'POST':
+        form = ConfirmationForm(request.POST)
+        if form.is_valid():
+            n=cont['slot'].name
+            cont['slot'].delete()
+            messages.success(request, f'Slot "{n}" has been deleted successfully')
+            return redirect(reverse('arena-home', args=[sport_id, arena_id]))
+    else:
+        form = ConfirmationForm()
+    cont['form']=form
+    return render(request, 'slots/slot-delete.html', cont)

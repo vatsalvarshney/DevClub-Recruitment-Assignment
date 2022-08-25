@@ -1,4 +1,5 @@
 from django.db import models
+from users.models import User
 
 class Sport(models.Model):
     name = models.CharField(max_length=50)
@@ -40,3 +41,7 @@ class Slot(models.Model):
         self.current_player_capacity=self.arena.max_player_capacity
         self.current_spectator_capacity=self.arena.max_spectator_capacity
         return super().save(*args,**kwargs)
+
+# class Booking(models.Model):
+#     member = models.ForeignKey(User, on_delete=models.CASCADE)
+#     slot = models.ForeignKey(Slot, on_delete=models.CASCADE)
