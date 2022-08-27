@@ -6,7 +6,6 @@
 {% endblock %}
 
 {% block content %}
-    <img src="{% static sport.cover_picture %}" class="img-fluid">
     <h1>{{ sport }}
         {% if isstaff or isadmin %}
             <a href="{% url 'sport-edit' sport_id=sport.id %}"><img src="{% static 'slots/update-icon.webp' %}" width="15" height="15"></a>

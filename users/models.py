@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 import os
+from datetime import datetime, timedelta
 from django.conf import settings
 
 class Role(models.Model):
@@ -32,4 +33,8 @@ class User(AbstractUser):
     def roles(self):
         return "; ".join([r.get_id_display() for r in self.role.all()])
     
-
+    def total_played_minutes(self):
+        ans=timedelta()
+        for bk in self.booking_set.filter(slot__end_time__lt=datetime.now(), is_active=True):
+            ans+=bk.slot.duration()
+        return ans.seconds//60

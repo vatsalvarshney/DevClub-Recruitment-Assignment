@@ -1,6 +1,7 @@
 from django.db import models
 from users.models import User
 
+
 class Sport(models.Model):
     name = models.CharField(max_length=50)
     cover_picture = models.ImageField(blank=True)
@@ -13,6 +14,7 @@ class Sport(models.Model):
         self.cover_picture = f'slots/sport-covers/sport-cover-{(self.id)%5 + 1}.jpeg'
         return super().save(*args, **kwargs)
 
+
 class Arena(models.Model):
     name = models.CharField(max_length=100)
     sport = models.ForeignKey(Sport, on_delete=models.CASCADE)
@@ -22,6 +24,7 @@ class Arena(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Slot(models.Model):
     name = models.CharField(max_length=100, default='(Untitled)')
@@ -36,12 +39,44 @@ class Slot(models.Model):
 
     def duration(self):
         return self.end_time-self.start_time
+    
+    def approved_booking_set(self):
+        return self.booking_set.filter(is_approved=True, is_active=True)
+
+    def approved_member_set(self):
+        return self.approved_booking_set().values_list('member', flat=True)
+
+    def cancelled_member_set(self):
+        return self.booking_set.filter(is_active=False).values_list('member', flat=True)
+
+    def approved_booking_count(self):
+        return self.approved_booking_set().count()
+
+    def available_booking_count(self):
+        ans = self.current_player_capacity-self.approved_booking_count()
+        if ans>=0:
+            return ans
+        else:
+            return "O/B"    # Overbooked
 
     def save(self, *args,**kwargs):
         self.current_player_capacity=self.arena.max_player_capacity
         self.current_spectator_capacity=self.arena.max_spectator_capacity
         return super().save(*args,**kwargs)
 
-# class Booking(models.Model):
-#     member = models.ForeignKey(User, on_delete=models.CASCADE)
-#     slot = models.ForeignKey(Slot, on_delete=models.CASCADE)
+
+class Booking(models.Model):
+    member = models.ForeignKey(User, on_delete=models.CASCADE)
+    slot = models.ForeignKey(Slot, on_delete=models.CASCADE)
+
+    AUTO_APPROVE = True    # Automatic approval of bookings
+    is_approved = models.BooleanField(default=AUTO_APPROVE)
+    is_active = models.BooleanField(default=True)
+
+    def approve(self):
+        self.is_approved=True
+        return self.save()
+    
+    def cancel(self):
+        self.is_active=False
+        return self.save()

@@ -18,8 +18,8 @@ class ArenaForm(forms.ModelForm):
         fields = '__all__'
 
 class SlotCreationFormNoRepeat(forms.ModelForm):
-    start_time = forms.SplitDateTimeField(widget=admin_widgets.AdminSplitDateTime(attrs={'style':'max-width: 15em'}, help_text="Enter time in 24 hour format with colons. Like 6:00 am becomes 6:00, and 5:00 pm becomes 17:00"))
-    end_time = forms.SplitDateTimeField(widget=admin_widgets.AdminSplitDateTime(attrs={'style':'max-width: 15em'}, help_text="Enter time in 24 hour format with colons. Like 6:00 am becomes 6:00, and 5:00 pm becomes 17:00"))
+    start_time = forms.SplitDateTimeField(widget=admin_widgets.AdminSplitDateTime(attrs={'style':'max-width: 15em'}), help_text="Enter time in 24 hour format with colons. Like 6:00 am becomes 6:00, and 5:00 pm becomes 17:00")
+    end_time = forms.SplitDateTimeField(widget=admin_widgets.AdminSplitDateTime(attrs={'style':'max-width: 15em'}), help_text="Enter time in 24 hour format with colons. Like 6:00 am becomes 6:00, and 5:00 pm becomes 17:00")
     class Meta:
         model = Slot
         fields = '__all__'

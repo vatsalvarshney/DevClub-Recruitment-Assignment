@@ -1,27 +1,138 @@
 {% extends 'users/base.html' %}
+{% load static %}
 
 {% block title %}
 {{ view_user.get_full_name }}
 {% endblock %}
 
 {% block content %}
-    <h1>{{ view_user.get_full_name }}</h1>
-    <div><img src="{{ view_user.profile_picture.url }}" alt="" width="100"></div>
-    {% if view_user == user %}
-        <div><a href="{% url 'pwd-change' %}">Change password</a></div>
-        <div><a href="{% url 'pfp-change' %}">Change Profile Picture</a></div>
-    {% endif %}
-    <h2>User Details</h2>
-    <h4>Email address</h4>
-    <a href="mailto:{{ view_user.email }}">{{ view_user.email }}</a>
-    <h4>Roles</h4>
-    {{ view_user.roles }}
-    <h4>Last access to site</h4>
-    {% if view_user == user %}
-        Online
-    {% elif view_user.last_login %}
-        {{ view_user.last_login }}
-    {% else %}
-        Never
-    {% endif %}
+    <div class="row">
+        <div class="col-4">
+            <div class="border rounded px-4 pb-4" style="background-color: #f5f5f5;">
+                <div class="text-center mt-4"><img src="{{ view_user.profile_picture.url }}" alt="" width="200"></div>
+                <h1>{{ view_user.get_full_name }}</h1>
+                <div class="container border rounded" style="background-color: white;">
+                    <h4 class="text-center">Total minutes played</h4>
+                    <h3 class="w-100 text-center font-weight-bold text-success">{{ view_user.total_played_minutes }}</h3>
+                </div>
+                <div class="container border rounded mt-4 pb-4" style="background-color: white;">
+                    <h4>User Details</h4>
+                    <div class="ml-3">
+                        <h5 class="mb-2">Email address</h5>
+                        <a href="mailto:{{ view_user.email }}">{{ view_user.email }}</a>
+                        <h5 class="mb-2">Roles</h5>
+                        {{ view_user.roles }}
+                        <h5 class="mb-2">Last access to site</h5>
+                        {% if view_user == user %}
+                            Online
+                        {% elif view_user.last_login %}
+                            {{ view_user.last_login }}
+                        {% else %}
+                            Never
+                        {% endif %}
+                        {% if view_user == user %}
+                            <h5 class="mb-2">Settings</h5>
+                            <div><a href="{% url 'pwd-change' %}">Change password</a></div>
+                            <div><a href="{% url 'pfp-change' %}">Change profile picture</a></div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>    
+        </div>
+        {% if view_user == user %}
+        <div class="col-8">
+            <div class="col-12 border rounded" style="background-color: #f5f5f5;">
+                <h5 class="font-weight-bold mt-2"><a style="text-decoration: none; color: grey;" href="{% url 'profile' username=user.username %}">MY BOOKINGS</a></h5>
+                <div class="row py-2 mb-2 text-secondary font-weight-bold" style="position: sticky; top: 54px; z-index: 10; background-color: white; border-bottom: 1.5px solid rgba(0,0,0,0.2); border-top: 1.5px solid rgba(0,0,0,0.2);">
+                    <div class="col-2 my-auto" style="text-align: center;">Date</div>
+                    <div class="col-10 row">
+                        <div class="col-3 my-auto">Sport & Arena</div>
+                        <div class="col-3 my-auto">Slot Name</div>
+                        <div class="col-4 my-auto">Time</div>
+                        <div class="col-2 my-auto">Status</div>
+                    </div>
+                </div>
+                {% for date,bks in page_obj %}
+                <div class="row">
+                    <div class="col-2 my-auto" style="text-align: center;"><div><b>{{ date }}</b></div></div>
+                    <ul class="col-10 list-group">
+                        {% for bk in bks %}
+                            {% if bk.is_active %}
+                            <li class="list-group-item my-1 border-success" style="background-color: #dcf7de;">
+                            {% else %}
+                            <li class="list-group-item my-1 border-danger" style="background-color: #ffeded;">
+                            {% endif %}
+                                <div class="row">
+                                    <div class="col-3">
+                                        <a style="color:black;" href="{% url 'sport-home' sport_id=bk.slot.arena.sport.id %}">{{ bk.slot.arena.sport.name }}</a><br>
+                                        <a style="color:black;" href="{% url 'arena-home' sport_id=bk.slot.arena.sport.id arena_id=bk.slot.arena.id %}">{{ bk.slot.arena.name }}</a>
+                                    </div>
+                                    <div class="col-3 my-auto">{{ bk.slot.name }}</div>
+                                    <div class="col-4 my-auto">{{ bk.slot.start_time.time }}-{{ bk.slot.end_time.time }}</div>
+                                    {% if bk.is_active %}
+                                        <div class="col-2 my-auto text-success"><b>Approved</b><br><a href="#" style="color: red;" data-toggle="modal" data-target="#Modal{{ bk.id }}Cancel" data-dismiss="modal">(Cancel)</a></div>
+                                    {% else %}
+                                        <div class="col-2 my-auto text-danger"><b>Cancelled</b></div>
+                                    {% endif %}
+                                </div>
+                            </li>
+                            <div class="modal fade" id="Modal{{ bk.id }}Cancel" tabindex="-1" role="dialog" aria-labelledby="Modal{{ bk.id }}CancelLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="Modal{{ bk.id }}CancelLabel">Are you sure you want to cancel your booking for slot "{{ bk.slot.name }}"?</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            If cancelled, you will not be able to book this instance of the slot again.
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">No, take be back</button>
+                                            <a href="{% url 'slot-cancel' sport_id=bk.slot.arena.sport.id arena_id=bk.slot.arena.id slot_id=bk.slot.id member_id=bk.member.id %}"><button type="button" class="btn btn-danger">Confirm cancellation</button></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <hr/ style="border-top: 1.5px solid rgba(0,0,0,0.2)">
+            {% endfor %}
+                <nav class="mt-4">
+                    <ul class="pagination justify-content-end">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1" tabindex="-1">First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" tabindex="-1">Previous</a>
+                            </li>
+                        {% endif %}
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}<span class="sr-only">(current)</span></a>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}" tabindex="-1">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" tabindex="-1">Last</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        {% endif %}
+    </div>
 {% endblock %}

@@ -1,0 +1,147 @@
+{% extends 'users/base.html' %}
+{% load static %}
+
+{% block title %}
+{{ arena }} Slots | {{ sport }}
+{% endblock %}
+
+{% block content %}
+    <h1>{{ sport }}</h1>
+    <h2>
+        {{ arena }}
+        <a href="{% url 'arena-edit' sport_id=sport.id arena_id=arena.id %}"><img src="{% static 'slots/update-icon.webp' %}" width="15" height="15"></a>
+        <a href="{% url 'arena-delete' sport_id=sport.id arena_id=arena.id %}"><img src="{% static 'slots/delete-icon.png' %}" width="15" height="15"></a>
+    </h2>
+    <div class="dropdown dropright mb-4">
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Add new Slot
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <p class="dropdown-header"><b>Choose Repeat Frequency</b></p>
+            <a class="dropdown-item" href="{% url 'slot-create-no-repeat' sport_id=sport.id arena_id=arena.id %}">No Repeat</a>
+            <a class="dropdown-item" href="{% url 'slot-create-daily' sport_id=sport.id arena_id=arena.id %}">Daily</a>
+            <a class="dropdown-item" href="{% url 'slot-create-weekly' sport_id=sport.id arena_id=arena.id %}">Weekly</a>
+        </div>
+    </div>
+    <div class="row py-2 mb-2 text-secondary font-weight-bold" style="position: sticky; top: 54px; z-index: 10; background-color: white; border-bottom: 1.5px solid rgba(0,0,0,0.2); border-top: 1.5px solid rgba(0,0,0,0.2);">
+        <div class="col-1 my-auto" style="text-align: center;">Date</div>
+        <div class="col-11 row">
+            <div class="col-3 my-auto">Slot name</div>
+            <div class="col-3 my-auto">Time</div>
+            <div class="col-2 my-auto">Approved bookings</div>
+            <div class="col-1 my-auto px-0">Player capacity</div>
+            <div class="col-1 my-auto px-0">Spectator capacity</div>
+            <div class="col-2 my-auto text-center">Actions</div>
+        </div>
+    </div>
+    {% for date,slots in page_obj %}
+        <div class="row">
+            <div class="col-1 my-auto" style="text-align: center;"><div><b>{{ date }}</b></div></div>
+            <ul class="col-11 list-group">
+                {% for slot in slots %}
+                    {% if slot.available_booking_count == 0 %}
+                    <li class="list-group-item my-1 border-secondary" style="background-color: #e0e0e0;">
+                    {% elif slot.available_booking_count > 0 %}
+                    <li class="list-group-item my-1 border-primary" style="background-color: #e1eefc;">
+                    {% else %}
+                    <li class="list-group-item my-1 border-danger" style="background-color: #ffeded;">
+                    {% endif %}
+                        <div class="row">
+                            <div class="col-3">{{ slot.name }}</div>
+                            <div class="col-3">{{ slot.start_time.time }}-{{ slot.end_time.time }}</div>
+                            <div class="col-2">{{ slot.approved_booking_count }}</div>
+                            <div class="col-1">{{ slot.current_player_capacity }}</div>
+                            <div class="col-1">{{ slot.current_spectator_capacity }}</div>
+                            <div class="col-2 d-flex justify-content-between">
+                                <div>
+                                    <a class="mr-1" href="{% url 'slot-edit' sport_id=sport.id arena_id=arena.id slot_id=slot.id %}"><img src="{% static 'slots/update-icon.webp' %}" width="15" height="15"></a>
+                                    <a href="{% url 'slot-delete' sport_id=sport.id arena_id=arena.id slot_id=slot.id %}"><img src="{% static 'slots/delete-icon.png' %}" width="15" height="15"></a>
+                                </div>
+                                <a data-toggle="collapse" href="#collapseSlot{{ slot.id }}" aria-expanded="false" aria-controls="collapseSlot{{ slot.id }}"><img src="{% static 'slots/dropdown-arrow.png' %}" height="15"></a>
+                            </div>
+                        </div>
+                    </li>
+                    <div class="collapse mx-4 mt-2 mb-4" id="collapseSlot{{ slot.id }}">
+                        <div class="card card-body">
+                            <div class="row mb-2">
+                                <div class="col-4 px-4"><b>Member name</b></div>
+                                <div class="col-4"><b>Booking status</b></div>
+                                <div class="col-4"><b>Cancel booking</b></div>
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                {% for b in slot.booking_set.all %}
+                                    {% if not b.is_active %}
+                                    <li class="list-group-item" style="background-color: #ffeded;">
+                                    {% else %}
+                                    <li class="list-group-item" style="background-color: #dcf7de;">
+                                    {% endif %}
+                                        <div class="row">
+                                            <div class="col-4">{{ b.member.get_full_name }}</div>
+                                            {% if not b.is_active %}
+                                                <div class="col-4 text-danger"><b>Cancelled</b></div>
+                                            {% else %}
+                                                <div class="col-4 text-success"><b>Approved</b></div>
+                                                <a href="#" class="col-4" style="color: red;" data-toggle="modal" data-target="#Modal{{ b.id }}Cancel" data-dismiss="modal">Cancel</a>
+                                            {% endif %}
+                                        </div>
+                                    </li>
+                                    <div class="modal fade" id="Modal{{ b.id }}Cancel" tabindex="-1" role="dialog" aria-labelledby="Modal{{ b.id }}CancelLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="Modal{{ b.id }}CancelLabel">Are you sure you want to cancel {{ b.member }}'s booking for slot "{{ b.slot }}"?</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    If cancelled, they can't book this instance of the slot again.
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">No, take be back</button>
+                                                    <a href="{% url 'slot-cancel' sport_id=sport.id arena_id=arena.id slot_id=b.slot.id member_id=b.member.id %}"><button type="button" class="btn btn-danger">Confirm cancellation</button></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                {% endfor %}
+            </ul>
+        </div>
+        <hr/ style="border-top: 1.5px solid rgba(0,0,0,0.2)">
+    {% endfor %}
+    <nav>
+        <ul class="pagination justify-content-end">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1" tabindex="-1">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" tabindex="-1">Previous</a>
+                </li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}<span class="sr-only">(current)</span></a>
+                    </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" tabindex="-1">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" tabindex="-1">Last</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endblock %}

@@ -5,6 +5,8 @@ from django.contrib import messages
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
+from datetime import datetime,timedelta
+from django.core.paginator import Paginator
 
 
 def register(request):
@@ -27,7 +29,25 @@ def profile(request, username):
     if User.objects.filter(username=username):
         view_user=User.objects.get(username=username)
         if view_user.is_active:
-            return render(request, 'users/profile.html', {'view_user': view_user})
+            now=datetime.today()
+            today=now.date()
+            dt=today
+            bookings_list=[]
+            while dt<=today+timedelta(days=365):
+                bookings_set=request.user.booking_set.filter(slot__start_time__date=dt, slot__start_time__gte=now)
+                if dt==today:
+                    dt_str='Today'
+                elif dt==today+timedelta(days=1):
+                    dt_str='Tomorrow'
+                else:
+                    dt_str=dt.strftime('%a')+', '+dt.strftime('%d')+' '+dt.strftime('%b')
+                if bookings_set:
+                    bookings_list.append(( dt_str , bookings_set ))
+                dt+=timedelta(days=1)
+            paginator = Paginator(bookings_list, 7)
+            page_number = request.GET.get('page')
+            page_obj = paginator.get_page(page_number)
+            return render(request, 'users/profile.html', {'view_user': view_user, 'page_obj':page_obj})
         else:
             return render(request, 'users/no-profile.html', {'exists': True})
     else:

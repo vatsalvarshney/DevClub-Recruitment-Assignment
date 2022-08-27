@@ -13,7 +13,7 @@
             <a href="{% url 'arena-delete' sport_id=sport.id arena_id=arena.id %}"><img src="{% static 'slots/delete-icon.png' %}" width="15" height="15"></a>
         {% endif %}</h2>
     {% if isstaff or isadmin %}
-        <div class="dropdown dropright">
+        <div class="dropdown dropright mb-4">
             <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Add new Slot
             </button>
@@ -24,12 +24,140 @@
                 <a class="dropdown-item" href="{% url 'slot-create-weekly' sport_id=sport.id arena_id=arena.id %}">Weekly</a>
             </div>
         </div>
+        <a href="{% url 'arena-all-slots' sport_id=sport.id arena_id=arena.id %}"><button class="btn btn-info">See all slots</button></a>
     {% endif %}
-    <ul class="list-group list-group-flush">
-        {% for s in slots %}
-        <li class="list-group-item"><div class="row">
-            <div class="h5">{{ s }}</div>
-        </div></li>
-        {% endfor %}
-    </ul>
+    <div class="row">
+    {% for day,date,slots in slots_by_date %}
+        <div class="col">
+            <div class="d-flex flex-column justify-content-center ">
+                <h5 class="mt-4 mb-0 mx-auto">{{ day }}</h5>
+                <h6 class="mt-1 mx-auto">{{ date }}</h6>
+            </div>
+            {% if slots %}
+                {% for s in slots %}
+                    <a href="#" style="text-decoration: none; color:black;" data-toggle="modal" data-target="#Modal{{ s.id }}">
+                        {% if user.id in s.approved_member_set %}
+                        <div class="border border-success rounded w-100 my-2 p-2" style="background-color: #dcf7de;">
+                        {% elif user.id in s.cancelled_member_set %}
+                        <div class="border border-danger rounded w-100 my-2 p-2" style="background-color: #ffeded;">
+                        {% elif s.start_time.date in disallowed_dates_list %}
+                        <div class="border border-secondary rounded w-100 my-2 p-2 text-muted" style="background-color: #e0e0e0;">
+                        {% elif s.available_booking_count > 0 %}
+                        <div class="border border-primary rounded w-100 my-2 p-2" style="background-color: #e1eefc;">
+                        {% else %}
+                        <div class="border border-secondary rounded w-100 my-2 p-2 text-muted" style="background-color: #e0e0e0;">
+                        {% endif %}
+                            <div>{{ s }}</div>
+                            <div class="small">{{ s.start_time.time }}-{{ s.end_time.time }}</div>
+                            <hr/ class="my-1">
+                            {% if user.id in s.approved_member_set %}
+                            <div class="text-success small"><b>Booked</b></div>
+                            {% elif user.id in s.cancelled_member_set %}
+                            <div class="text-danger small"><b>Booking Cancelled</b></div>
+                            {% elif s.start_time.date in disallowed_dates_list %}
+                            <div class="text-muted small"><b>Quota exhausted</b></div>
+                            {% elif s.available_booking_count > 0 %}
+                            <div class="text-primary small"><b>Available: {{ s.available_booking_count }}</b></div>
+                            {% else %}
+                            <div class="text-muted small"><b>Full</b></div>
+                            {% endif %}
+                            <div class="modal fade" id="Modal{{ s.id }}" tabindex="-1" role="dialog" aria-labelledby="Modal{{ s.id }}Label" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="Modal{{ s.id }}Label">{{ s }}: Slot info</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div><b>Arena:</b> {{ s.arena }}</div>
+                                            <div><b>From:</b> {{ s.start_time }}</div>
+                                            <div><b>To:</b> {{ s.end_time }}</div>
+                                            <div><b>Duration:</b> {{ s.duration }}</div>
+                                            <div><b>Player capacity:</b> {{ s.current_player_capacity }}</div>
+                                            <div><b>Spectator capacity:</b> {{ s.current_spectator_capacity }}</div>
+                                            <div><b>Bookings Available:</b> {{ s.available_booking_count }}</div>
+                                            <hr/>
+                                            <div><b>Your booking status:</b>
+                                                {% if user.id in s.approved_member_set %}
+                                                Booked
+                                                {% elif user.id in s.cancelled_member_set %}
+                                                Cancelled
+                                                {% elif s.start_time.date in disallowed_dates_list %}
+                                                Quota of 3 bookings for each day has been exhausted for this date
+                                                {% else %}
+                                                Not booked
+                                                {% endif %}    
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                            {% if user.id in s.approved_member_set %}
+                                            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#Modal{{ s.id }}Cancel" data-dismiss="modal">Cancel booking</button>
+                                            {% elif user.id in s.cancelled_member_set %}
+                                            {% elif s.start_time.date in disallowed_dates_list %}
+                                            {% elif s.available_booking_count > 0 %}
+                                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#Modal{{ s.id }}Book" data-dismiss="modal">Book</button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% if user.id in s.approved_member_set %}
+                            <div class="modal fade" id="Modal{{ s.id }}Cancel" tabindex="-1" role="dialog" aria-labelledby="Modal{{ s.id }}CancelLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="Modal{{ s.id }}CancelLabel">Are you sure you want to cancel your booking for slot "{{ s }}"?</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            If cancelled, you will not be able to book this instance of the slot again.
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">No, take be back</button>
+                                            <a href="{% url 'slot-cancel' sport_id=sport.id arena_id=arena.id slot_id=s.id member_id=user.id %}"><button type="button" class="btn btn-danger">Confirm cancellation</button></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% elif user.id not in s.cancelled_member_set and s.available_booking_count > 0 and s.start_time.date not in disallowed_dates_list %}
+                            <div class="modal fade" id="Modal{{ s.id }}Book" tabindex="-1" role="dialog" aria-labelledby="Modal{{ s.id }}BookLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="Modal{{ s.id }}BookLabel">Are you sure you want to request booking for slot "{{ s }}"?</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            If the booking is approved, you are obliged to show up at the arena at the specified time. Otherwise, penalty may be imposed. 
+                                            Cancellation, if intended, should be done at least 2 hours prior to the starting time of slot.
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                            <a href="{% url 'slot-book' sport_id=sport.id arena_id=arena.id slot_id=s.id %}"><button type="button" class="btn btn-primary">Confirm</button></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </a>
+                {% endfor %}
+            {% else %}
+                <div class="mt-4" style="text-align: center; font-size: 0.9rem;">No slots for this day</div>
+            {% endif %}
+        </div>
+    {% endfor %}
+    </div>
+    <script>
+        $(document).ready(function() {
+            $("body").tooltip({ selector: '[data-toggle=tooltip]' });
+        });
+    </script>
 {% endblock %}
