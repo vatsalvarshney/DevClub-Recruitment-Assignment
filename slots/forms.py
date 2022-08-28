@@ -1,5 +1,5 @@
 from django import forms
-from .models import Sport, Arena, Slot
+from .models import Sport, Arena, Slot, ArenaRating, SportRating, RatingParameter, RATING_PARAMETERS_LIST
 from django.contrib.admin import widgets as admin_widgets
 
 
@@ -46,3 +46,18 @@ class SlotCreationFormWeekly(forms.ModelForm):
     class Meta:
         model = Slot
         fields = ['name', 'arena', 'starting_time', 'ending_time', 'repeating_days', 'repeat_weekly_starting_from_date', 'repeat_weekly_until_date', 'current_player_capacity', 'current_spectator_capacity']
+
+
+class ArenaRatingCreationForm(forms.ModelForm):
+    for par in RATING_PARAMETERS_LIST:
+        exec(par+"=forms.IntegerField(widget=forms.widgets.NumberInput(attrs={'type':'range', 'min':1, 'max':10, 'step':1, 'class': 'w-100'}))")
+    class Meta:
+        model = ArenaRating
+        fields = ['comments']
+
+class SportRatingCreationForm(forms.ModelForm):
+    for par in RATING_PARAMETERS_LIST:
+        exec(par+"=forms.IntegerField(widget=forms.widgets.NumberInput(attrs={'type':'range', 'min':1, 'max':10, 'step':1, 'class': 'w-100'}))")
+    class Meta:
+        model = SportRating
+        fields = ['comments']

@@ -7,7 +7,8 @@ Edit Slot | {{ sport }}
 {% endblock %}
 
 {% block content %}
-    <h1>{{ sport }}</h1>
+<div class="content-section">
+    <h1 class="border-bottom">{{ sport }}</h1>
     <h2>{{ arena }}</h2>
     {% if isstaff or isadmin %}
         <h3>Edit Slot "{{ slot }}"</h3>
@@ -17,11 +18,12 @@ Edit Slot | {{ sport }}
                 {{ form|crispy }}
             </fieldset>
             <button class="btn btn-secondary" onclick="javascript:window.history.back(-1);return false;">Cancel</button>
-            <button class="btn btn-secondary" type="submit">Save</button>
+            <button class="btn btn-primary" type="submit">Save</button>
         </form>
     {% else %}
         You are not authorized to access this page. Contact the admin if you think this is a mistake.
     {% endif %}
+</div>
     <script type="text/javascript" src="/admin/jsi18n/"></script>
     <script type="text/javascript" src="/static/admin/js/core.js"></script>
     <script type="text/javascript" src="/static/admin/js/admin/RelatedObjectLookups.js"></script>

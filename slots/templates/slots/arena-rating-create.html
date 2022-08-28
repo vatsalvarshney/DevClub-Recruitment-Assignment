@@ -1,0 +1,45 @@
+{% extends 'users/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+Rate {{ arena }} | {{ sport }}
+{% endblock %}
+
+{% block content %}
+<div class="content-section">
+    <h1 class="border-bottom">{{ sport }}</h1>
+    {% if ismember %}
+        <h2>Rate {{ arena }}</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <fieldset class="form-horizontal">
+                {% for field in form %}
+                    {% if field == form.arena or field == form.comments %}
+                    {% else %}
+                        <div>
+                            <div class="ratingFormField">
+                                <div class="form-group row mb-0">
+                                    <label for="{{ field.id_for_label }}" class="col-2 col-form-label">{{ field.label }}*:</label>
+                                    <div class="col-6">
+                                        {{ field }}
+                                        <div class="mb-4 d-flex w-100 justify-content-between">
+                                            {% for num in rating_nums %}
+                                                <div>{{ num }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                {{ form.comments|as_crispy_field }}
+            </fieldset>
+            <button class="btn btn-secondary" onclick="javascript:window.history.back(-1);return false;">Cancel</button>
+            <button class="btn btn-primary" type="submit">Save</button>
+        </form>
+    {% else %}
+        This rating page is for members only.
+    {% endif %}
+</div>
+{% endblock %}

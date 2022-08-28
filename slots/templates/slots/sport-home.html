@@ -6,7 +6,8 @@
 {% endblock %}
 
 {% block content %}
-    <h1>{{ sport }}
+<div class="content-section">
+    <h1 class="border-bottom">{{ sport }}
         {% if isstaff or isadmin %}
             <a href="{% url 'sport-edit' sport_id=sport.id %}"><img src="{% static 'slots/update-icon.webp' %}" width="15" height="15"></a>
             <a href="{% url 'sport-delete' sport_id=sport.id %}"><img src="{% static 'slots/delete-icon.png' %}" width="15" height="15"></a>
@@ -22,4 +23,5 @@
         </div></li>
         {% endfor %}
     </ul>
+</div>
 {% endblock %}

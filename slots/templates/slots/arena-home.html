@@ -6,7 +6,8 @@
 {% endblock %}
 
 {% block content %}
-    <h1>{{ sport }}</h1>
+<div class="content-section">
+    <h1 class="border-bottom pb-2">{{ sport }}</h1>
     <h2>{{ arena }}
         {% if isstaff or isadmin %}
             <a href="{% url 'arena-edit' sport_id=sport.id arena_id=arena.id %}"><img src="{% static 'slots/update-icon.webp' %}" width="15" height="15"></a>
@@ -14,7 +15,7 @@
         {% endif %}</h2>
     {% if isstaff or isadmin %}
         <div class="dropdown dropright mb-4">
-            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Add new Slot
             </button>
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -28,7 +29,7 @@
     {% endif %}
     <div class="row">
     {% for day,date,slots in slots_by_date %}
-        <div class="col">
+        <div class="col px-2">
             <div class="d-flex flex-column justify-content-center ">
                 <h5 class="mt-4 mb-0 mx-auto">{{ day }}</h5>
                 <h6 class="mt-1 mx-auto">{{ date }}</h6>
@@ -53,7 +54,7 @@
                             {% if user.id in s.approved_member_set %}
                             <div class="text-success small"><b>Booked</b></div>
                             {% elif user.id in s.cancelled_member_set %}
-                            <div class="text-danger small"><b>Booking Cancelled</b></div>
+                            <div class="text-danger small"><b>Cancelled</b></div>
                             {% elif s.start_time.date in disallowed_dates_list %}
                             <div class="text-muted small"><b>Quota exhausted</b></div>
                             {% elif s.available_booking_count > 0 %}
@@ -155,6 +156,7 @@
         </div>
     {% endfor %}
     </div>
+</div>
     <script>
         $(document).ready(function() {
             $("body").tooltip({ selector: '[data-toggle=tooltip]' });

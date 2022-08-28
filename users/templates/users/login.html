@@ -6,13 +6,17 @@ Log In
 {% endblock %}
 
 {% block content %}
-    <h1>Login to the world of Sports!</h1>
-    <form method="POST">
-        {% csrf_token %}
-        <fieldset>
-            {{ form|crispy }}
-        </fieldset>
-        <button class="btn btn-secondary" type="submit">Log In</button>
-    </form>
-    Need an Account? <a href="{% url 'register' %}">Sign Up</a>
+    <div class="content-section pt-5">
+        <h2 class="text-center">Login to the world of Sports!</h2>
+        <div class="col-md-4 mx-auto">
+            <form method="POST">
+                {% csrf_token %}
+                <fieldset>
+                    {{ form|crispy }}
+                </fieldset>
+                <button class="btn btn-primary" type="submit">Log In</button>
+            </form>
+            <div class="mt-2">Don't have an Account? <a href="{% url 'register' %}">Sign Up</a></div>
+        </div>
+    </div>
 {% endblock %}

@@ -6,14 +6,15 @@
 {% endblock %}
 
 {% block content %}
-    <h1>{{ sport }}</h1>
+<div class="content-section">
+    <h1 class="border-bottom">{{ sport }}</h1>
     <h2>
         {{ arena }}
         <a href="{% url 'arena-edit' sport_id=sport.id arena_id=arena.id %}"><img src="{% static 'slots/update-icon.webp' %}" width="15" height="15"></a>
         <a href="{% url 'arena-delete' sport_id=sport.id arena_id=arena.id %}"><img src="{% static 'slots/delete-icon.png' %}" width="15" height="15"></a>
     </h2>
     <div class="dropdown dropright mb-4">
-        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Add new Slot
         </button>
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -63,49 +64,53 @@
                     </li>
                     <div class="collapse mx-4 mt-2 mb-4" id="collapseSlot{{ slot.id }}">
                         <div class="card card-body">
-                            <div class="row mb-2">
-                                <div class="col-4 px-4"><b>Member name</b></div>
-                                <div class="col-4"><b>Booking status</b></div>
-                                <div class="col-4"><b>Cancel booking</b></div>
-                            </div>
-                            <ul class="list-group list-group-flush">
-                                {% for b in slot.booking_set.all %}
-                                    {% if not b.is_active %}
-                                    <li class="list-group-item" style="background-color: #ffeded;">
-                                    {% else %}
-                                    <li class="list-group-item" style="background-color: #dcf7de;">
-                                    {% endif %}
-                                        <div class="row">
-                                            <div class="col-4">{{ b.member.get_full_name }}</div>
-                                            {% if not b.is_active %}
-                                                <div class="col-4 text-danger"><b>Cancelled</b></div>
-                                            {% else %}
-                                                <div class="col-4 text-success"><b>Approved</b></div>
-                                                <a href="#" class="col-4" style="color: red;" data-toggle="modal" data-target="#Modal{{ b.id }}Cancel" data-dismiss="modal">Cancel</a>
-                                            {% endif %}
-                                        </div>
-                                    </li>
-                                    <div class="modal fade" id="Modal{{ b.id }}Cancel" tabindex="-1" role="dialog" aria-labelledby="Modal{{ b.id }}CancelLabel" aria-hidden="true">
-                                        <div class="modal-dialog modal-lg" role="document">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="Modal{{ b.id }}CancelLabel">Are you sure you want to cancel {{ b.member }}'s booking for slot "{{ b.slot }}"?</h5>
-                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                        <span aria-hidden="true">&times;</span>
-                                                    </button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    If cancelled, they can't book this instance of the slot again.
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">No, take be back</button>
-                                                    <a href="{% url 'slot-cancel' sport_id=sport.id arena_id=arena.id slot_id=b.slot.id member_id=b.member.id %}"><button type="button" class="btn btn-danger">Confirm cancellation</button></a>
+                            {% if not slot.booking_set.all %}
+                                <div class="font-weight-bold text-muted ml-5">No bookings for this slot</div>
+                            {% else %}
+                                <div class="row mb-2">
+                                    <div class="col-4 px-4"><b>Member name</b></div>
+                                    <div class="col-4"><b>Booking status</b></div>
+                                    <div class="col-4"><b>Actions</b></div>
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                    {% for b in slot.booking_set.all %}
+                                        {% if not b.is_active %}
+                                        <li class="list-group-item" style="background-color: #ffeded;">
+                                        {% else %}
+                                        <li class="list-group-item" style="background-color: #dcf7de;">
+                                        {% endif %}
+                                            <div class="row">
+                                                <div class="col-4">{{ b.member.get_full_name }}</div>
+                                                {% if not b.is_active %}
+                                                    <div class="col-4 text-danger"><b>Cancelled</b></div>
+                                                {% else %}
+                                                    <div class="col-4 text-success"><b>Approved</b></div>
+                                                    <a href="#" class="col-4" style="color: red;" data-toggle="modal" data-target="#Modal{{ b.id }}Cancel" data-dismiss="modal">Cancel</a>
+                                                {% endif %}
+                                            </div>
+                                        </li>
+                                        <div class="modal fade" id="Modal{{ b.id }}Cancel" tabindex="-1" role="dialog" aria-labelledby="Modal{{ b.id }}CancelLabel" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="Modal{{ b.id }}CancelLabel">Are you sure you want to cancel {{ b.member }}'s booking for slot "{{ b.slot }}"?</h5>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        If cancelled, they can't book this instance of the slot again.
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">No, take be back</button>
+                                                        <a href="{% url 'slot-cancel' sport_id=sport.id arena_id=arena.id slot_id=b.slot.id member_id=b.member.id %}"><button type="button" class="btn btn-danger">Confirm cancellation</button></a>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                {% endfor %}
-                            </ul>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
                         </div>
                     </div>
                 {% endfor %}
@@ -144,4 +149,5 @@
             {% endif %}
         </ul>
     </nav>
+</div>
 {% endblock %}

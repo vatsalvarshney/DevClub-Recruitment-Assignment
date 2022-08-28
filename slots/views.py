@@ -3,8 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.contrib import messages
 from users.models import Role, User
-from .models import Sport, Arena, Slot, Booking
-from .forms import ConfirmationForm, SportForm, ArenaForm, SlotCreationFormNoRepeat, SlotCreationFormDaily, SlotCreationFormWeekly
+from .models import Sport, Arena, Slot, Booking, RATING_PARAMETERS_LIST, ArenaRating, RatingParameter, SportRating
+from .forms import ConfirmationForm, SportForm, ArenaForm, SlotCreationFormNoRepeat, SlotCreationFormDaily, SlotCreationFormWeekly, ArenaRatingCreationForm, SportRatingCreationForm
 from datetime import datetime, timedelta
 from django.core.paginator import Paginator
 from django.views.generic.list import ListView
@@ -13,7 +13,6 @@ from django.views.generic.list import ListView
 @login_required(login_url='login')
 def context(request, sport_id=None, arena_id=None, slot_id=None):
     c= {
-        'show_sidebar': False,
         'ismember': request.user.role.contains(Role.objects.get(id=3)),
         'isstaff': request.user.role.contains(Role.objects.get(id=2)),
         'isadmin': request.user.role.contains(Role.objects.get(id=1))
@@ -33,7 +32,6 @@ def dashboardRedirect(request):
 def dashboard(request):
     cont=context(request)
     if cont['ismember']:
-        cont['show_sidebar']=True
         now=datetime.today()
         today=now.date()
         dt=today
@@ -56,7 +54,6 @@ def dashboard(request):
 
 def sportHome(request, sport_id):
     cont=context(request, sport_id)
-    cont['show_sidebar']=cont['ismember']
     cont['arenas']=cont['sport'].arena_set.all()
     return render(request, 'slots/sport-home.html', cont)
 
@@ -333,3 +330,56 @@ def slotCancel(request, sport_id, arena_id, slot_id, member_id):
     else:
         messages.error(request, "You are not allowed to perform this action. Contact admin if you think this is a mistake.")
     return redirect(reverse('arena-home', args=[sport_id, arena_id]))
+
+
+def arenaRatingCreate(request, sport_id, arena_id):
+    cont=context(request, sport_id, arena_id)
+    if request.method == 'POST':
+        form = ArenaRatingCreationForm(request.POST)
+        if form.is_valid():
+            rev=ArenaRating(
+                arena=cont['arena'],
+                rating_member=request.user,
+                comments=request.POST.get('comments')
+            )
+            rev.save()
+            for par in RATING_PARAMETERS_LIST:
+                rat=RatingParameter(
+                    rating_group=rev,
+                    parameter=par,
+                    rating=request.POST.get(par)
+                )
+                rat.save()
+            messages.success(request, 'Your review has been recorded!')
+            return redirect(reverse('arena-home', args=[sport_id, arena_id]))
+    else:
+        form = ArenaRatingCreationForm()
+    cont['form']= form
+    cont['rating_nums']=[1,2,3,4,5,6,7,8,9,10]
+    return render(request, 'slots/arena-rating-create.html', cont)
+
+def sportRatingCreate(request, sport_id):
+    cont=context(request, sport_id)
+    if request.method == 'POST':
+        form = SportRatingCreationForm(request.POST)
+        if form.is_valid():
+            rev=SportRating(
+                sport=cont['sport'],
+                rating_member=request.user,
+                comments=request.POST.get('comments')
+            )
+            rev.save()
+            for par in RATING_PARAMETERS_LIST:
+                rat=RatingParameter(
+                    rating_group=rev,
+                    parameter=par,
+                    rating=request.POST.get(par)
+                )
+                rat.save()
+            messages.success(request, 'Your review has been recorded!')
+            return redirect(reverse('sport-home', args=[sport_id]))
+    else:
+        form = SportRatingCreationForm()
+    cont['form']= form
+    cont['rating_nums']=[1,2,3,4,5,6,7,8,9,10]
+    return render(request, 'slots/sport-rating-create.html', cont)
