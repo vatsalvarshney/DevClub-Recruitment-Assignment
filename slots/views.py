@@ -3,11 +3,12 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.contrib import messages
 from users.models import Role, User
-from .models import Sport, Arena, Slot, Booking, RATING_PARAMETERS_LIST, ArenaRating, RatingParameter, SportRating
-from .forms import ConfirmationForm, SportForm, ArenaForm, SlotCreationFormNoRepeat, SlotCreationFormDaily, SlotCreationFormWeekly, ArenaRatingCreationForm, SportRatingCreationForm
+from .models import Sport, Arena, Slot, Booking, RATING_PARAMETERS_LIST, RatingParameter, SportRating
+from .forms import ConfirmationForm, SportForm, ArenaForm, SlotCreationFormNoRepeat, SlotCreationFormDaily, SlotCreationFormWeekly, SportRatingCreationForm
 from datetime import datetime, timedelta
 from django.core.paginator import Paginator
 from django.views.generic.list import ListView
+import statistics
 
 
 @login_required(login_url='login')
@@ -29,6 +30,7 @@ def context(request, sport_id=None, arena_id=None, slot_id=None):
 def dashboardRedirect(request):
     return redirect(reverse('dashboard'))
 
+@login_required(login_url='login')
 def dashboard(request):
     cont=context(request)
     if cont['ismember']:
@@ -52,11 +54,32 @@ def dashboard(request):
     return render(request, 'slots/dashboard.html', cont)
 
 
+@login_required(login_url='login')
 def sportHome(request, sport_id):
     cont=context(request, sport_id)
     cont['arenas']=cont['sport'].arena_set.all()
+    user_rating=cont['sport'].sportrating_set.filter(member=request.user)
+    if user_rating:
+        cont['rated_by_user']=True
+        cont['user_rating']=user_rating.first()
+        cont['sport_ratings']=cont['sport'].sportrating_set.exclude(member=request.user).order_by('-rating_time')
+    else:
+        cont['rated_by_user']=False
+        cont['sport_ratings']=cont['sport'].sportrating_set.all().order_by('-rating_time')
+    cont['rating_count']=cont['sport'].sportrating_set.all().count()
+    if cont['rating_count']:
+        net_ratings=[]
+        sport_net_rating_sum=0
+        for par in RATING_PARAMETERS_LIST:
+            par_rating=round(statistics.fmean(RatingParameter.objects.filter(parameter=par,rating_group__sport=cont['sport']).values_list('rating', flat=True)),2)
+            net_ratings.append((par.replace('_',' ').capitalize(),par_rating))
+            sport_net_rating_sum+=par_rating
+        cont['net_ratings']=net_ratings
+        cont['sport_net_rating']=round(sport_net_rating_sum/len(RATING_PARAMETERS_LIST),2)
     return render(request, 'slots/sport-home.html', cont)
 
+
+@login_required(login_url='login')
 def sportCreate(request):
     cont=context(request)
     if request.method == 'POST':
@@ -70,6 +93,7 @@ def sportCreate(request):
     cont['form']= form
     return render(request, 'slots/sport-create.html', cont)
 
+@login_required(login_url='login')
 def sportEdit(request, sport_id):
     cont=context(request, sport_id)
     if request.method == 'POST':
@@ -83,6 +107,7 @@ def sportEdit(request, sport_id):
     cont['form']=form
     return render(request, 'slots/sport-edit.html', cont)
 
+@login_required(login_url='login')
 def sportDelete(request, sport_id):
     cont=context(request, sport_id)
     if request.method == 'POST':
@@ -98,6 +123,7 @@ def sportDelete(request, sport_id):
     return render(request, 'slots/sport-delete.html', cont)
 
 
+@login_required(login_url='login')
 def arenaHome(request, sport_id, arena_id):
     cont=context(request, sport_id, arena_id)
     if not cont['ismember']:
@@ -116,6 +142,7 @@ def arenaHome(request, sport_id, arena_id):
     cont['disallowed_dates_list']=disallowed_dates_list
     return render(request, 'slots/arena-home.html', cont)
 
+@login_required(login_url='login')
 def arenaAllSlots(request, sport_id, arena_id):
     cont=context(request, sport_id, arena_id)
     if not (cont['isstaff'] or cont['isadmin']):
@@ -136,6 +163,7 @@ def arenaAllSlots(request, sport_id, arena_id):
     return render(request, 'slots/arena-all-slots.html', cont)
 
 
+@login_required(login_url='login')
 def arenaCreate(request, sport_id):
     cont=context(request, sport_id)
     if request.method == 'POST':
@@ -149,6 +177,7 @@ def arenaCreate(request, sport_id):
     cont['form']= form
     return render(request, 'slots/arena-create.html', cont)
 
+@login_required(login_url='login')
 def arenaEdit(request, sport_id, arena_id):
     cont=context(request, sport_id, arena_id)
     if request.method == 'POST':
@@ -162,6 +191,7 @@ def arenaEdit(request, sport_id, arena_id):
     cont['form']=form
     return render(request, 'slots/arena-edit.html', cont)
 
+@login_required(login_url='login')
 def arenaDelete(request, sport_id, arena_id):
     cont=context(request, sport_id, arena_id)
     if request.method == 'POST':
@@ -177,6 +207,7 @@ def arenaDelete(request, sport_id, arena_id):
     return render(request, 'slots/arena-delete.html', cont)
 
 
+@login_required(login_url='login')
 def slotCreateNoRepeat(request, sport_id, arena_id):
     cont=context(request, sport_id, arena_id)
     if request.method == 'POST':
@@ -200,6 +231,7 @@ def slotCreateNoRepeat(request, sport_id, arena_id):
     cont['form']= form
     return render(request, 'slots/slot-create.html', cont)
 
+@login_required(login_url='login')
 def slotCreateDaily(request, sport_id, arena_id):
     cont=context(request, sport_id, arena_id)
     if request.method == 'POST':
@@ -240,6 +272,7 @@ def slotCreateDaily(request, sport_id, arena_id):
     cont['form']= form
     return render(request, 'slots/slot-create.html', cont)
 
+@login_required(login_url='login')
 def slotCreateWeekly(request, sport_id, arena_id):
     cont=context(request, sport_id, arena_id)
     if request.method == 'POST':
@@ -284,6 +317,7 @@ def slotCreateWeekly(request, sport_id, arena_id):
     return render(request, 'slots/slot-create.html', cont)
 
 
+@login_required(login_url='login')
 def slotEdit(request, sport_id, arena_id, slot_id):
     cont=context(request, sport_id, arena_id, slot_id)
     if request.method == 'POST':
@@ -297,6 +331,7 @@ def slotEdit(request, sport_id, arena_id, slot_id):
     cont['form']=form
     return render(request, 'slots/slot-edit.html', cont)
 
+@login_required(login_url='login')
 def slotDelete(request, sport_id, arena_id, slot_id):
     cont=context(request, sport_id, arena_id, slot_id)
     if request.method == 'POST':
@@ -311,6 +346,7 @@ def slotDelete(request, sport_id, arena_id, slot_id):
     cont['form']=form
     return render(request, 'slots/slot-delete.html', cont)
 
+@login_required(login_url='login')
 def slotBook(request, sport_id, arena_id, slot_id):
     s=Slot.objects.get(id=slot_id)
     b=Booking(member=request.user, slot=s)
@@ -321,6 +357,7 @@ def slotBook(request, sport_id, arena_id, slot_id):
         messages.success(request, f'Booking for slot "{s}" has been requested')
     return redirect(reverse('arena-home', args=[sport_id, arena_id]))
 
+@login_required(login_url='login')
 def slotCancel(request, sport_id, arena_id, slot_id, member_id):
     cont=context(request, sport_id, arena_id, slot_id)
     b=Booking.objects.get(member_id=member_id, slot_id=slot_id)
@@ -331,41 +368,36 @@ def slotCancel(request, sport_id, arena_id, slot_id, member_id):
         messages.error(request, "You are not allowed to perform this action. Contact admin if you think this is a mistake.")
     return redirect(reverse('arena-home', args=[sport_id, arena_id]))
 
-
-def arenaRatingCreate(request, sport_id, arena_id):
-    cont=context(request, sport_id, arena_id)
-    if request.method == 'POST':
-        form = ArenaRatingCreationForm(request.POST)
-        if form.is_valid():
-            rev=ArenaRating(
-                arena=cont['arena'],
-                rating_member=request.user,
-                comments=request.POST.get('comments')
-            )
-            rev.save()
-            for par in RATING_PARAMETERS_LIST:
-                rat=RatingParameter(
-                    rating_group=rev,
-                    parameter=par,
-                    rating=request.POST.get(par)
-                )
-                rat.save()
-            messages.success(request, 'Your review has been recorded!')
-            return redirect(reverse('arena-home', args=[sport_id, arena_id]))
+@login_required(login_url='login')
+def slotCancelAll(request, sport_id, arena_id, slot_id):
+    cont=context(request, sport_id, arena_id, slot_id)
+    if cont['isstaff'] or cont['isadmin']:
+        for b in cont['slot'].booking_set.all():
+            b.cancel()
+        messages.success(request, f'All bookings for slot \"{cont["slot"]}\" have been cancelled')
     else:
-        form = ArenaRatingCreationForm()
-    cont['form']= form
-    cont['rating_nums']=[1,2,3,4,5,6,7,8,9,10]
-    return render(request, 'slots/arena-rating-create.html', cont)
+        messages.error(request, "You are not allowed to perform this action. Contact admin if you think this is a mistake.")
+    return redirect(reverse('arena-home', args=[sport_id, arena_id]))
 
+
+@login_required(login_url='login')
 def sportRatingCreate(request, sport_id):
     cont=context(request, sport_id)
+    if cont['sport'].sportrating_set.filter(member=request.user):
+        messages.warning(request, 'You have already submitted a review for this sport. Submitting the below form deletes your previous review.')
+        return redirect(reverse('sport-rating-edit', args=[sport_id]))
     if request.method == 'POST':
         form = SportRatingCreationForm(request.POST)
-        if form.is_valid():
+        valid_pars=True
+        for par in RATING_PARAMETERS_LIST:
+            if request.POST.get(par)=='0':
+                messages.error(request, f"Rating for {par.replace('_',' ').capitalize()} can't be empty")
+                valid_pars=False
+                break
+        if form.is_valid() and valid_pars:
             rev=SportRating(
                 sport=cont['sport'],
-                rating_member=request.user,
+                member=request.user,
                 comments=request.POST.get('comments')
             )
             rev.save()
@@ -381,5 +413,49 @@ def sportRatingCreate(request, sport_id):
     else:
         form = SportRatingCreationForm()
     cont['form']= form
-    cont['rating_nums']=[1,2,3,4,5,6,7,8,9,10]
+    cont['rating_nums']=['-',1,2,3,4,5,6,7,8,9,10]
     return render(request, 'slots/sport-rating-create.html', cont)
+
+@login_required(login_url='login')
+def sportRatingEdit(request, sport_id):
+    cont=context(request, sport_id)
+    if request.method == 'POST':
+        form = SportRatingCreationForm(request.POST)
+        valid_pars=True
+        for par in RATING_PARAMETERS_LIST:
+            if request.POST.get(par)=='0':
+                messages.error(request, f"Rating for {par.replace('_',' ').capitalize()} can't be empty")
+                valid_pars=False
+                break
+        if form.is_valid() and valid_pars:
+            old_rev=SportRating.objects.get(sport=cont['sport'],member=request.user)
+            old_rev.delete()
+            rev=SportRating(
+                sport=cont['sport'],
+                member=request.user,
+                comments=request.POST.get('comments')
+            )
+            rev.save()
+            for par in RATING_PARAMETERS_LIST:
+                rat=RatingParameter(
+                    rating_group=rev,
+                    parameter=par,
+                    rating=request.POST.get(par)
+                )
+                rat.save()
+            messages.success(request, 'Your review has been recorded!')
+            return redirect(reverse('sport-home', args=[sport_id]))
+    else:
+        form = SportRatingCreationForm()
+    cont['form']= form
+    cont['rating_nums']=['-',1,2,3,4,5,6,7,8,9,10]
+    return render(request, 'slots/sport-rating-edit.html', cont)
+
+@login_required(login_url='login')
+def sportRatingDelete(request, sport_id):
+    cont=context(request, sport_id)
+    rev=cont['sport'].sportrating_set.filter(member=request.user)
+    if rev:
+        rev.first().delete()
+        messages.success(request, 'Your review has been deleted')
+    return redirect(reverse('sport-home', args=[sport_id]))

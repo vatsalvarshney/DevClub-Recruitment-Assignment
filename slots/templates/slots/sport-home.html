@@ -1,27 +1,178 @@
 {% extends 'users/base.html' %}
 {% load static %}
+{% load profanity %}
 
 {% block title %}
 {{ sport }}
 {% endblock %}
 
+{% block breadcrumb %}
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ sport.name.capitalize }}</li>
+    </ol>
+{% endblock %}
+
 {% block content %}
 <div class="content-section">
-    <h1 class="border-bottom">{{ sport }}
+    <h1 class="border-bottom d-flex">
+        <div>{{ sport }}</div>
         {% if isstaff or isadmin %}
-            <a href="{% url 'sport-edit' sport_id=sport.id %}"><img src="{% static 'slots/update-icon.webp' %}" width="15" height="15"></a>
-            <a href="{% url 'sport-delete' sport_id=sport.id %}"><img src="{% static 'slots/delete-icon.png' %}" width="15" height="15"></a>
+            <div class="dropdown ml-2">
+                <a href="#" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="{% static 'slots/options-icon.png' %}" width="15" height="15"></a>
+                <div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
+                    <a class="dropdown-item" href="{% url 'sport-edit' sport_id=sport.id %}">Edit</a>
+                    <a class="dropdown-item text-danger" href="{% url 'sport-delete' sport_id=sport.id %}">Delete</a>
+                </div>
+            </div>
         {% endif %}
     </h1>
-    {% if isstaff or isadmin %}
-        <div><a href="{% url 'arena-create' sport_id=sport.id %}">Add new Arena</a></div>
-    {% endif %}
-    <ul class="list-group list-group-flush">
-        {% for a in arenas %}
-        <li class="list-group-item"><div class="row">
-            <a href="{% url 'arena-home' sport_id=sport.id arena_id=a.id %}"><div class="h5">{{ a }}</div></a>
-        </div></li>
+    <h2>Arenas
+        {% if isstaff or isadmin %}
+            <a href="{% url 'arena-create' sport_id=sport.id %}"><img src="{% static 'slots/add-icon.png' %}" width="15" height="15"></a>
+        {% endif %}
+    </h2>
+    <div class="d-flex flex-wrap">
+        {% for arena in arenas %}
+            <div class="card my-2 mx-2 border" style="width: 15rem; border-radius: 10px;">
+                <div class="card-body">
+                    <div class="d-flex flex-row justify-content-between">
+                        <h4 class="card-title mt-0">{{ arena.name }}</h4>
+                        {% if isstaff or isadmin %}
+                            <div class="dropdown">
+                                <a href="#" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="{% static 'slots/options-icon.png' %}" width="15" height="15"></a>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                                    <a class="dropdown-item" href="{% url 'arena-edit' sport_id=sport.id arena_id=arena.id %}">Edit</a>
+                                    <a class="dropdown-item text-danger" href="{% url 'arena-delete' sport_id=sport.id arena_id=arena.id %}">Delete</a>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'arena-home' sport_id=sport.id arena_id=arena.id %}">View Slots &raquo;</a>
+                </div>
+            </div>
         {% endfor %}
-    </ul>
+    </div>
+    <h2>Ratings and Reviews</h2>
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card mx-1 col py-4" style="background-color: #f5f5f5;">
+                {% if not rating_count %}
+                    <div class="text-secondary"><b>No reviews yet</b></div>
+                {% else %}
+                    <div class="p-2 d-flex">
+                        <img src="{% static 'slots/star-icon.png' %}" class="mr-2" width="40" height="40">
+                        <h3 class="my-1">{{ sport_net_rating }}/10</h3>
+                        {% if rating_count == 1 %}
+                            <div class="mt-2 ml-3 text-muted"><b>({{ rating_count }} review)</b></div>
+                        {% else %}
+                            <div class="mt-2 ml-3 text-muted"><b>({{ rating_count }} reviews)</b></div>
+                        {% endif %}
+                    </div>
+                    <div class="py-2" style="background-color: white;">
+                        {% for par,rating in net_ratings %}
+                            <div class="row ml-4 mt-1">
+                                <div class="col-8">{{ par }} :</div>
+                                <div class="col-4">{{ rating }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card mx-1 col py-4" style="max-height: 400px; overflow-y:scroll; background-color: #f5f5f5;">
+                {% if rated_by_user %}
+                    <div class="text-secondary d-flex">
+                        <b>Your review</b>
+                        <div class="dropdown ml-2 pb-1">
+                            <a href="#" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="{% static 'slots/options-icon.png' %}" width="15" height="15"></a>
+                            <div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item" href="{% url 'sport-rating-edit' sport_id=sport.id %}">Edit</a>
+                                <a class="dropdown-item text-danger" href="{% url 'sport-rating-delete' sport_id=sport.id %}">Delete</a>
+                            </div>
+                        </div>        
+                    </div>
+                    <li class="list-group-item mb-4">
+                        <div class="d-flex justify-content-between">
+                            <div class="d-flex">
+                                <a href="{% url 'profile' username=user.username %}"><img class="rounded-circle mr-4" src="{{ user.profile_picture.url }}" width="45" height="45"></a>
+                                <div>
+                                    {{ user.get_full_name }}
+                                    <div class="small text-muted">
+                                        {{ user_rating.rating_time|date }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex">
+                                <div class="border rounded p-2">
+                                    <img src="{% static 'slots/star-icon.png' %}" class="mr-2" width="20" height="20">
+                                    {{ user_rating.net_rating }}/10
+                                </div>
+                                <a href="#" data-toggle="collapse" data-target="#collapseRating{{ user_rating.id }}" class="h4 mb-0 mt-2" style="text-decoration: none;">&blacktriangledown;</a>
+                            </div>
+                        </div>
+                        <div class="collapse py-2" style="background-color: #f5f5f5;" id="collapseRating{{ user_rating.id }}">
+                            <div class="border rounded w-75 py-2 px-4 ml-auto mr-4" style="background-color: white;">
+                                {% for parameter in user_rating.ratingparameter_set.all %}
+                                    <div class="row">
+                                        <div class="col-8">{{ parameter.get_parameter_display }} :</div>
+                                        <div class="col-4 text-right">{{ parameter.rating }}/10</div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="ml-2 mt-3">{{ user_rating.comments|censor }}</div>
+                    </li>
+                {% elif ismember %}
+                <a href="{% url 'sport-rating-create' sport_id=sport.id %}" class="btn btn-primary w-25 mb-4 mx-auto" role="button">Add Review</a>                
+                {% endif %}
+                <ul class="list-group list-group-flush">
+                    {% if sport_ratings and rated_by_user %}
+                        <div class="text-secondary"><b>Other reviews</b></div>
+                    {% endif %}
+                    {% for rating in sport_ratings %}
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div class="d-flex">
+                                    <a href="{% url 'profile' username=rating.member.username %}"><img class="rounded-circle mr-4" src="{{ rating.member.profile_picture.url }}" width="45" height="45"></a>
+                                    <div>
+                                        {{ rating.member.get_full_name }}
+                                        <div class="small text-muted">
+                                            {{ rating.rating_time|date }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex">
+                                    <div class="border rounded p-2">
+                                        <img src="{% static 'slots/star-icon.png' %}" class="mr-2" width="20" height="20">
+                                        {{ rating.net_rating }}/10
+                                    </div>
+                                    <a href="#" data-toggle="collapse" data-target="#collapseRating{{ rating.id }}" class="h4 mb-0 mt-2" style="text-decoration: none;">&blacktriangledown;</a>
+                                </div>
+                            </div>
+                            <div class="collapse py-2" style="background-color: #f5f5f5;" id="collapseRating{{ rating.id }}">
+                                <div class="border rounded w-75 py-2 px-4 ml-auto mr-4" style="background-color: white;">
+                                    {% for parameter in rating.ratingparameter_set.all %}
+                                        <div class="row">
+                                            <div class="col-8">{{ parameter.get_parameter_display }} :</div>
+                                            <div class="col-4 text-right">{{ parameter.rating }}/10</div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="ml-2 mt-3">{{ rating.comments|censor }}</div>
+                        </li>
+                    {% empty %}
+                        {% if rated_by_user %}
+                            <div class="text-secondary"><b>No other reviews yet</b></div>
+                        {% else %}
+                            <div class="text-secondary"><b>No reviews yet</b></div>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

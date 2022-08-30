@@ -5,13 +5,26 @@
 {{ arena }} Slots | {{ sport }}
 {% endblock %}
 
+{% block breadcrumb %}
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'sport-home' sport_id=sport.id %}">{{ sport.name.capitalize }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ arena.name.capitalize }}</li>
+    </ol>
+{% endblock %}
+
 {% block content %}
 <div class="content-section">
     <h1 class="border-bottom">{{ sport }}</h1>
-    <h2>
-        {{ arena }}
-        <a href="{% url 'arena-edit' sport_id=sport.id arena_id=arena.id %}"><img src="{% static 'slots/update-icon.webp' %}" width="15" height="15"></a>
-        <a href="{% url 'arena-delete' sport_id=sport.id arena_id=arena.id %}"><img src="{% static 'slots/delete-icon.png' %}" width="15" height="15"></a>
+    <h2 class="d-flex">
+        <div>{{ arena }}</div>
+        <div class="dropright ml-2">
+            <a href="#" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="{% static 'slots/options-icon.png' %}" width="15" height="15"></a>
+            <div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="{% url 'arena-edit' sport_id=sport.id arena_id=arena.id %}">Edit</a>
+                <a class="dropdown-item text-danger" href="{% url 'arena-delete' sport_id=sport.id arena_id=arena.id %}">Delete</a>
+            </div>
+        </div>
     </h2>
     <div class="dropdown dropright mb-4">
         <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -24,7 +37,7 @@
             <a class="dropdown-item" href="{% url 'slot-create-weekly' sport_id=sport.id arena_id=arena.id %}">Weekly</a>
         </div>
     </div>
-    <div class="row py-2 mb-2 text-secondary font-weight-bold" style="position: sticky; top: 54px; z-index: 10; background-color: white; border-bottom: 1.5px solid rgba(0,0,0,0.2); border-top: 1.5px solid rgba(0,0,0,0.2);">
+    <div class="row py-2 mb-2 text-secondary font-weight-bold" style="position: sticky; top: 64px; z-index: 10; background-color: white; border-bottom: 1.5px solid rgba(0,0,0,0.2); border-top: 1.5px solid rgba(0,0,0,0.2);">
         <div class="col-1 my-auto" style="text-align: center;">Date</div>
         <div class="col-11 row">
             <div class="col-3 my-auto">Slot name</div>
@@ -109,6 +122,26 @@
                                             </div>
                                         </div>
                                     {% endfor %}
+                                    <div class="w-100 text-right"><a style="color: red;" href="#" data-toggle="modal" data-target="#Modal{{ slot.id }}SlotCancel" data-dismiss="modal">Cancel all</a></div>
+                                    <div class="modal fade" id="Modal{{ slot.id }}SlotCancel" tabindex="-1" role="dialog" aria-labelledby="Modal{{ slot.id }}SlotCancelLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="Modal{{ slot.id }}SlotCancelLabel">Are you sure you want to cancel all bookings for slot "{{ b.slot }}"?</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    If cancelled, the members whose bookings have been approved can't book this instance of the slot again, but those who have not yet booked will still be able to book. To prevent any future bookings, delete this slot.
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">No, take be back</button>
+                                                    <a href="{% url 'slot-cancel-all' sport_id=sport.id arena_id=arena.id slot_id=slot.id %}"><button type="button" class="btn btn-danger">Confirm cancellation</button></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </ul>
                             {% endif %}
                         </div>

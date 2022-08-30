@@ -2,15 +2,14 @@
 {% load crispy_forms_tags %}
 
 {% block title %}
-Rate {{ arena }} | {{ sport }}
+Edit rating | {{ sport }}
 {% endblock %}
 
 {% block breadcrumb %}
     <ol class="breadcrumb mb-0">
         <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
         <li class="breadcrumb-item"><a href="{% url 'sport-home' sport_id=sport.id %}">{{ sport.name.capitalize }}</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'arena-home' sport_id=sport.id arena_id=arena.id %}">{{ arena.name.capitalize }}</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Rate arena</li>
+        <li class="breadcrumb-item active" aria-current="page">Edit rating</li>
     </ol>
 {% endblock %}
 
@@ -18,13 +17,12 @@ Rate {{ arena }} | {{ sport }}
 <div class="content-section">
     <h1 class="border-bottom">{{ sport }}</h1>
     {% if ismember %}
-        <h2>Rate {{ arena }}</h2>
+        <h2>Edit rating</h2>
         <form method="POST">
             {% csrf_token %}
             <fieldset class="form-horizontal">
                 {% for field in form %}
-                    {% if field == form.arena or field == form.comments %}
-                    {% else %}
+                    {% if field != form.comments %}
                         <div>
                             <div class="ratingFormField">
                                 <div class="form-group row mb-0">

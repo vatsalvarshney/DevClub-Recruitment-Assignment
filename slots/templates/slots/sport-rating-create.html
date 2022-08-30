@@ -5,6 +5,14 @@
 Rate {{ sport }}
 {% endblock %}
 
+{% block breadcrumb %}
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'sport-home' sport_id=sport.id %}">{{ sport.name.capitalize }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Rate sport</li>
+    </ol>
+{% endblock %}
+
 {% block content %}
 <div class="content-section">
     <h1 class="border-bottom">{{ sport }}</h1>
@@ -14,11 +22,11 @@ Rate {{ sport }}
             {% csrf_token %}
             <fieldset class="form-horizontal">
                 {% for field in form %}
-                    {% if field == form.arena or field == form.comments %}
-                    {% else %}
+                    {% if field != form.comments %}
                         <div>
                             <div class="ratingFormField">
                                 <div class="form-group row mb-0">
+                                    {{ field.errors }}
                                     <label for="{{ field.id_for_label }}" class="col-2 col-form-label">{{ field.label }}*:</label>
                                     <div class="col-6">
                                         {{ field }}

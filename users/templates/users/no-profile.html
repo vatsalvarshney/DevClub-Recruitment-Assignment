@@ -4,6 +4,13 @@
 No User found
 {% endblock %}
 
+{% block breadcrumb %}
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Profile</li>
+    </ol>
+{% endblock %}
+
 {% block content %}
 <div class="content-section">
     {% if exists %}

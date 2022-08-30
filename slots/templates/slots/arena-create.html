@@ -2,14 +2,22 @@
 {% load crispy_forms_tags %}
 
 {% block title %}
-Create Arena | {{ sport }}
+Add Arena | {{ sport }}
+{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'sport-home' sport_id=sport.id %}">{{ sport.name.capitalize }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Add arena</li>
+    </ol>
 {% endblock %}
 
 {% block content %}
 <div class="content-section">
     <h1 class="border-bottom">{{ sport }}</h1>
     {% if isstaff or isadmin %}
-        <h2>Create new arena</h2>
+        <h2>Add new arena</h2>
         <form method="POST">
             {% csrf_token %}
             <fieldset>

@@ -1,7 +1,5 @@
 from django.db import models
 from users.models import User
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
 import statistics
 
 class Sport(models.Model):
@@ -94,33 +92,20 @@ RATING_PARAMETERS_LIST=[
 ]
 RATINGS_CHOICES = [(1,'1'),(2,'2'),(3,'3'),(4,'4'),(5,'5'),(6,'6'),(7,'7'),(8,'8'),(9,'9'),(10,'10')]
 
-
-class ArenaRating(models.Model):
-    arena = models.ForeignKey(Arena, on_delete=models.CASCADE)
-    comments = models.TextField()
-    rating_member = models.ForeignKey(User, on_delete=models.CASCADE)
-    rating_time = models.DateTimeField(auto_now_add=True)
-    rating_update_time = models.DateTimeField(auto_now=True)
-
-    def net_rating(self):
-        return statistics.fmean(self.review_question_set.values_list('rating', flat=True))
-
-
 class SportRating(models.Model):
     sport = models.ForeignKey(Sport, on_delete=models.CASCADE)
-    comments = models.TextField()
-    rating_member = models.ForeignKey(User, on_delete=models.CASCADE)
+    member = models.ForeignKey(User, on_delete=models.CASCADE)
+    comments = models.TextField(help_text="Be civil and respectful. Don't use offensive language.")
     rating_time = models.DateTimeField(auto_now_add=True)
-    rating_update_time = models.DateTimeField(auto_now=True)
 
     def net_rating(self):
-        return statistics.fmean(self.review_question_set.values_list('rating', flat=True))
+        return round(statistics.fmean(self.ratingparameter_set.values_list('rating', flat=True)),2)
 
 
 class RatingParameter(models.Model):
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    
-    rating_group = GenericForeignKey()
+    rating_group = models.ForeignKey(SportRating, on_delete=models.CASCADE)
     parameter = models.CharField(max_length=100)
     rating = models.PositiveSmallIntegerField(choices=RATINGS_CHOICES)
+
+    def get_parameter_display(self):
+        return self.parameter.replace('_',' ').capitalize()

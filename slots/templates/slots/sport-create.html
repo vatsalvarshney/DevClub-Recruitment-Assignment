@@ -2,13 +2,20 @@
 {% load crispy_forms_tags %}
 
 {% block title %}
-Create Sport
+Add Sport
+{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Add sport</li>
+    </ol>
 {% endblock %}
 
 {% block content %}
 <div class="content-section">
     {% if isstaff or isadmin %}
-        <h2>Create new sport</h2>
+        <h2>Add new sport</h2>
         <form method="POST">
             {% csrf_token %}
             <fieldset>

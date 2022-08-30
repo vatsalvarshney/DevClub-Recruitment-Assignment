@@ -12,24 +12,24 @@ Dashboard
 {% endif %}
             <div class="content-section">
                 <h1 class="border-bottom">Dashboard</h1>
-                <h3>Sports
+                <h2 class="mb-0">Sports
                     {% if isstaff or isadmin %}
                         <a href="{% url 'sport-create' %}"><img src="{% static 'slots/add-icon.png' %}" width="15" height="15"></a>
                     {% endif %}
-                </h3>
-                <div class="d-flex">
+                </h2>
+                <div class="d-flex flex-wrap">
                     {% for sport in sports %}
-                        <div class="card my-4 mx-2 border" style="width: 18rem; border-radius: 10px;">
+                        <div class="card my-4 mx-2 border" style="width: 15rem; border-radius: 10px;">
                             <div style="overflow: hidden; height: 150px; border-top-left-radius: 10px; border-top-right-radius: 10px;"><img class="card-img-top" src="{% static sport.cover_picture %}"></div>
                             <div class="card-body">
                                 <div class="d-flex flex-row justify-content-between">
                                     <h4 class="card-title mt-0">{{ sport.name }}</h4>
                                     {% if isstaff or isadmin %}
                                         <div class="dropdown">
-                                            <a href="#" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="{% static 'slots/options-icon.png' %}" width="30" height="30"></a>
+                                            <a href="#" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="{% static 'slots/options-icon.png' %}" width="15" height="15"></a>
                                             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
                                                 <a class="dropdown-item" href="{% url 'sport-edit' sport_id=sport.id %}">Edit</a>
-                                                <a class="dropdown-item" href="{% url 'sport-delete' sport_id=sport.id %}">Delete</a>
+                                                <a class="dropdown-item text-danger" href="{% url 'sport-delete' sport_id=sport.id %}">Delete</a>
                                             </div>
                                         </div>
                                     {% endif %}
@@ -58,6 +58,8 @@ Dashboard
                             </li>
                         {% endfor %}
                     </ul>
+                {% empty %}
+                <div class="text-secondary"><b>No upcoming bookings</b></div>
                 {% endfor %}
                 <div class="w-100 text-right mt-4"><a href="{% url 'profile' username=user.username %}">View all &raquo;</a></div>
             </div>
