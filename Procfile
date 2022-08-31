@@ -1,0 +1,1 @@
+web: gunicorn MittalSC_Booking.wsgi
