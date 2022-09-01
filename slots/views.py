@@ -269,8 +269,8 @@ def slotCreateDaily(request, sport_id, arena_id):
                         arena=arena,
                         start_time=datetime.combine(dt,st),
                         end_time=datetime.combine(dt,et),
-                        current_player_capacity=request.POST.get('current_player_capacity'),
-                        current_spectator_capacity=request.POST.get('current_spectator_capacity'),
+                        current_player_capacity=form.cleaned_data.get('current_player_capacity'),
+                        current_spectator_capacity=form.cleaned_data.get('current_spectator_capacity'),
                     )
                     slot.save()
                     dt=dt+timedelta(days=1)
@@ -318,8 +318,8 @@ def slotCreateWeekly(request, sport_id, arena_id):
                             arena=arena,
                             start_time=datetime.combine(dt,st),
                             end_time=datetime.combine(dt,et),
-                            current_player_capacity=request.POST.get('current_player_capacity'),
-                            current_spectator_capacity=request.POST.get('current_spectator_capacity'),
+                            current_player_capacity=form.cleaned_data.get('current_player_capacity'),
+                            current_spectator_capacity=form.cleaned_data.get('current_spectator_capacity'),
                         )
                         slot.save()
                         dt=dt+timedelta(days=7)
