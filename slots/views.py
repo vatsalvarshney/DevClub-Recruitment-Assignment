@@ -214,15 +214,19 @@ def slotCreateNoRepeat(request, sport_id, arena_id):
         form = SlotCreationFormNoRepeat(request.POST, initial={'arena':cont['arena']})
         if form.is_valid():
             arena=Arena.objects.get(id=request.POST.get('arena'))
+            is_error=False
             if form.cleaned_data.get('start_time')>=form.cleaned_data.get('end_time'):
                 messages.error(request, 'End time should be after start time')
-            elif request.POST.get('current_player_capacity')!='':
+                is_error=True
+            if request.POST.get('current_player_capacity')!='':
                 if int(request.POST.get('current_player_capacity'))>arena.max_player_capacity:
                     messages.error(request, "Player capacity can't be more than max player capacity of the arena")
-            elif request.POST.get('current_player_capacity')!='':
+                    is_error=True
+            if request.POST.get('current_spectator_capacity')!='':
                 if int(request.POST.get('current_spectator_capacity'))>arena.max_spectator_capacity:
                     messages.error(request, "Spectator capacity can't be more than max spectator capacity of the arena")
-            else:
+                    is_error=True
+            if not is_error:
                 slot=form.save()
                 messages.success(request, f'Slot {slot} has been created!')
                 return redirect(reverse('arena-home', args=[sport_id, arena_id]))
@@ -242,17 +246,22 @@ def slotCreateDaily(request, sport_id, arena_id):
             et=datetime.strptime(request.POST.get('ending_time'), '%H:%M').time()
             sd=datetime.strptime(request.POST.get('repeat_daily_starting_from_date'), '%Y-%m-%d').date()
             ed=datetime.strptime(request.POST.get('repeat_daily_until_date'), '%Y-%m-%d').date()
+            is_error=False
             if st>=et:
                 messages.error(request, 'End time should be after start time')
-            elif sd>ed:
+                is_error=True
+            if sd>ed:
                 messages.error(request, 'End date should be after start date')
-            elif request.POST.get('current_player_capacity')!='':
+                is_error=True
+            if request.POST.get('current_player_capacity')!='':
                 if int(request.POST.get('current_player_capacity'))>arena.max_player_capacity:
                     messages.error(request, "Player capacity can't be more than max player capacity of the arena")
-            elif request.POST.get('current_player_capacity')!='':
+                    is_error=True
+            if request.POST.get('current_spectator_capacity')!='':
                 if int(request.POST.get('current_spectator_capacity'))>arena.max_spectator_capacity:
                     messages.error(request, "Spectator capacity can't be more than max spectator capacity of the arena")
-            else:
+                    is_error=True
+            if not is_error:
                 dt=sd
                 while dt<=ed:
                     slot=Slot(
@@ -284,17 +293,22 @@ def slotCreateWeekly(request, sport_id, arena_id):
             sd=datetime.strptime(request.POST.get('repeat_weekly_starting_from_date'), '%Y-%m-%d').date()
             ed=datetime.strptime(request.POST.get('repeat_weekly_until_date'), '%Y-%m-%d').date()
             days_list=form.cleaned_data.get('repeating_days')
+            is_error=False
             if st>=et:
                 messages.error(request, 'End time should be after start time')
-            elif sd>ed:
+                is_error=True
+            if sd>ed:
                 messages.error(request, 'End date should be after start date')
-            elif request.POST.get('current_player_capacity')!='':
+                is_error=True
+            if request.POST.get('current_player_capacity')!='':
                 if int(request.POST.get('current_player_capacity'))>arena.max_player_capacity:
                     messages.error(request, "Player capacity can't be more than max player capacity of the arena")
-            elif request.POST.get('current_player_capacity')!='':
+                    is_error=True
+            if request.POST.get('current_spectator_capacity')!='':
                 if int(request.POST.get('current_spectator_capacity'))>arena.max_spectator_capacity:
                     messages.error(request, "Spectator capacity can't be more than max spectator capacity of the arena")
-            else:
+                    is_error=True
+            if not is_error:
                 for day in days_list:
                     initial_offset=(int(day)-sd.weekday())%7
                     dt=sd+timedelta(days=initial_offset)
