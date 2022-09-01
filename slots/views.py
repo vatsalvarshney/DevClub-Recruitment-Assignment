@@ -337,9 +337,22 @@ def slotEdit(request, sport_id, arena_id, slot_id):
     if request.method == 'POST':
         form = SlotCreationFormNoRepeat(request.POST, instance=cont['slot'])
         if form.is_valid():
-            form.save()
-            messages.success(request, f'Slot {cont["slot"]} has been updated!')
-            return redirect(reverse('arena-home', args=[sport_id, arena_id]))
+            is_error=False
+            if form.cleaned_data.get('start_time')>=form.cleaned_data.get('end_time'):
+                messages.error(request, 'End time should be after start time')
+                is_error=True
+            if request.POST.get('current_player_capacity')!='':
+                if int(request.POST.get('current_player_capacity'))>cont['slot'].arena.max_player_capacity:
+                    messages.error(request, "Player capacity can't be more than max player capacity of the arena")
+                    is_error=True
+            if request.POST.get('current_spectator_capacity')!='':
+                if int(request.POST.get('current_spectator_capacity'))>cont['slot'].arena.max_spectator_capacity:
+                    messages.error(request, "Spectator capacity can't be more than max spectator capacity of the arena")
+                    is_error=True
+            if not is_error:
+                form.save()
+                messages.success(request, f'Slot {cont["slot"]} has been updated!')
+                return redirect(reverse('arena-home', args=[sport_id, arena_id]))
     else:
         form = SlotCreationFormNoRepeat(instance=cont['slot'])
     cont['form']=form

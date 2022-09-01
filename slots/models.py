@@ -60,8 +60,10 @@ class Slot(models.Model):
             return "O/B"    # Overbooked
 
     def save(self, *args,**kwargs):
-        self.current_player_capacity=self.arena.max_player_capacity
-        self.current_spectator_capacity=self.arena.max_spectator_capacity
+        if self.current_player_capacity==None:
+            self.current_player_capacity=self.arena.max_player_capacity
+        if self.current_spectator_capacity==None:
+            self.current_spectator_capacity=self.arena.max_spectator_capacity
         return super().save(*args,**kwargs)
 
 
